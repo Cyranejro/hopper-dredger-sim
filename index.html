@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.13/lib/p5.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <script src="phisic.js"></script>
+    <script src="sketch.js"></script>
+  </head>
+  <body>
+    <main></main>
+    <div id="html-ui-layer">
+      <button id="btn-restart" class="btn top-btn-restart">⟳</button>
+      <button id="btn-fullscreen" class="btn top-btn-fs">Pełny Ekran 📱</button>
+      <button id="btn-stats" class="btn top-btn-stats">📊</button>
+      <button id="btn-gear" class="btn top-btn-gear">⚙️</button>
+
+      <div id="center-telemetry">
+        <div class="tel-col">
+          <span class="tel-lbl">HDG:</span> <span id="val-hdg">000.0°</span>
+        </div>
+        <div class="tel-col">
+          <span class="tel-lbl">STW:</span> <span id="val-stw">0.0 kn</span>
+        </div>
+        <div class="tel-col">
+          <span class="tel-lbl">ROT:</span> <span id="val-rot">0.0°/m</span>
+        </div>
+        <div class="tel-col">
+          <span class="tel-lbl">COG:</span> <span id="val-cog">000.0°</span>
+        </div>
+        <div class="tel-col">
+          <span class="tel-lbl">SOG:</span> <span id="val-sog">0.0 kn</span>
+        </div>
+      </div>
+
+      <div id="side-controls">
+        <div class="control-group">
+          <div class="label-container">
+            <span class="label text-blue">TIME</span>
+            <span id="val-time-display" class="sub-label">1x</span>
+          </div>
+          <div class="btn-group">
+            <button id="btn-time-minus" class="btn-sq">-</button>
+            <button id="btn-time-plus" class="btn-sq">+</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="label-container">
+            <span class="label text-yellow">ZOOM</span>
+            <span id="val-zoom-display" class="sub-label">1.0x</span>
+          </div>
+          <div class="btn-group">
+            <button
+              id="btn-zoom-minus"
+              class="btn-sq border-yellow"
+              onmousedown="startZoom(-0.02)"
+              onmouseup="stopZoom()"
+              onmouseleave="stopZoom()"
+              ontouchstart="startZoom(-0.02)"
+              ontouchend="stopZoom()"
+            >
+              -
+            </button>
+            <button
+              id="btn-zoom-plus"
+              class="btn-sq border-yellow"
+              onmousedown="startZoom(0.02)"
+              onmouseup="stopZoom()"
+              onmouseleave="stopZoom()"
+              ontouchstart="startZoom(0.02)"
+              ontouchend="stopZoom()"
+            >
+              +
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div
+        id="stats-menu"
+        class="menu-panel"
+        style="right: 70px; width: 220px;"
+      >
+        <h4
+          style="margin-top: 0; color: #ffc800; font-size: 14px; letter-spacing: 1px; text-align: center;"
+        >
+          SZCZEGÓŁY
+        </h4>
+        <div class="stats-grid">
+          <div class="stat-full-box">
+            BOW: <span id="val-bow-side">0.0 kn R</span>
+          </div>
+          <div class="stat-full-box">
+            STERN: <span id="val-stern-side">0.0 kn R</span>
+          </div>
+          <div class="stat-full-box">
+            AOA L/R: <span id="val-aoa-lr">0.0° / 0.0°</span>
+          </div>
+
+          <button class="btn-stat-box">
+            U: <span id="val-u-vel">0.0m/s</span>
+          </button>
+          <button class="btn-stat-box">
+            V: <span id="val-v-vel">0.0m/s</span>
+          </button>
+          <button class="btn-stat-box" style="grid-column: span 2">
+            R: <span id="val-r-vel">0.0rad/s</span>
+          </button>
+          <div
+            class="stat-full-box"
+            style="margin-top: 10px; border-color: #ffc800;"
+          >
+            SYS PERF:
+            <span id="val-perf-status" style="color: #00c864;">OK</span>
+          </div>
+          <button class="btn-stat-box">
+            FPS: <span id="val-fps" style="color: #fff;">0</span>
+          </button>
+          <button class="btn-stat-box">
+            RAM: <span id="val-ram" style="color: #fff;">0 MB</span>
+          </button>
+          <button class="btn-stat-box">CZAS REJSU: <span id="val-sim-time" style="color: #fff;">00:00</span></button>
+<button class="btn-stat-box">OPÓŹNIENIE: <span id="val-drift" style="color: #fff;">0.0s</span></button>
+          <div class="stat-full-box">
+  TURN DIA: <span id="val-turn-dia">N/A</span>
+</div>
+        </div>
+      </div>
+
+      <div id="settings-menu" class="menu-panel">
+        <h4 style="margin-top: 0;">MENU USTAWIEŃ</h4>
+        <p class="text-blue">WARUNKI ŁADOWANIA (COND):</p>
+        <div id="cond-grid">
+          <button class="btn-cond" onclick="setCondition(0)">1</button>
+          <button class="btn-cond" onclick="setCondition(1)">2</button>
+          <button class="btn-cond" onclick="setCondition(2)">3</button>
+          <button class="btn-cond" onclick="setCondition(3)">4</button>
+          <button class="btn-cond" onclick="setCondition(4)">5</button>
+          <button class="btn-cond" onclick="setCondition(5)">6</button>
+          <button class="btn-cond" onclick="setCondition(6)">7</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

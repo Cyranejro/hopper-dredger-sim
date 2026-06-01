@@ -1,0 +1,142 @@
+/* --- BAZA --- */
+html, body { margin: 0; padding: 0; overflow: hidden; touch-action: none; }
+canvas { display: block; }
+#html-ui-layer {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; font-family: sans-serif;
+}
+
+/* --- PRZYCISKI GŁÓWNE --- */
+.btn {
+  position: absolute; top: 20px; height: 45px;
+  background: rgba(30, 35, 50, 0.85);
+  border: 2px solid #64c8ff; color: white;
+  border-radius: 8px; font-weight: bold; cursor: pointer;
+  pointer-events: auto; backdrop-filter: blur(5px); transition: 0.2s;
+}
+.btn:active { transform: scale(0.95); }
+
+.top-btn-fs { right: 125px; width: 150px; }
+.top-btn-stats { right: 70px; width: 45px; font-size: 22px; }
+.top-btn-gear { right: 15px; width: 45px; font-size: 22px; }
+
+/* --- TELEMETRIA CENTRALNA --- */
+#center-telemetry {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(20, 25, 35, 0.85);
+  border: 2px solid rgba(100, 200, 255, 0.4);
+  border-radius: 8px;
+  padding: 10px 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 100px); /* 3 kolumny po 100px */
+  gap: 10px;
+  pointer-events: auto;
+  font-family: monospace;
+  backdrop-filter: blur(5px);
+  z-index: 5;
+}
+
+.tel-col {
+  display: flex;
+  justify-content: flex-start; /* Wyrównanie do lewej */
+  align-items: center;
+  font-size: 14px;
+  color: #ffffff;
+}
+
+.tel-lbl {
+  color: #64c8ff;
+  font-weight: bold;
+  margin-right: 5px;
+  min-width: 35px; /* Stała szerokość etykiety blokuje przesuwanie wartości */
+  text-align: left;
+}
+.telemetry-row { display: flex; justify-content: center; gap: 20px; }
+.tel-item { font-size: 15px; color: #fff; white-space: nowrap; }
+.tel-lbl { color: #64c8ff; font-weight: bold; }
+
+/* --- MENU BOCZNE I PANELE --- */
+.menu-panel {
+  position: absolute; right: 15px; top: 80px; width: 250px;
+  background: rgba(30, 35, 50, 0.95); border: 2px solid #64c8ff;
+  border-radius: 10px; padding: 15px; color: white;
+  pointer-events: auto; display: none; z-index: 100;
+}
+
+#side-controls {
+  position: absolute; right: 15px; top: 80px; pointer-events: auto;
+  display: flex; flex-direction: column; gap: 15px; align-items: flex-end; z-index: 10;
+}
+
+/* --- KONTROLKI I SIATKI --- */
+.control-group { display: flex; gap: 12px; align-items: flex-start; }
+.label-container { display: flex; flex-direction: column; align-items: flex-end; min-width: 60px; padding-top: 5px; }
+.label { font-size: 11px; font-weight: bold; letter-spacing: 1px; margin: 0; }
+.sub-label { font-size: 12px; color: #a0a0a0; font-family: monospace; margin-top: 4px; font-weight: bold; }
+
+.btn-group { display: flex; gap: 4px; }
+.btn-sq {
+  width: 40px; height: 40px; font-size: 22px;
+  background: rgba(40, 50, 70, 0.9); border: 2px solid #64c8ff;
+  color: #fff; border-radius: 8px; cursor: pointer; transition: 0.2s;
+  display: flex; justify-content: center; align-items: center;
+}
+.btn-sq:active { transform: scale(0.95); }
+
+#cond-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
+.btn-cond {
+  width: 40px; height: 40px; background: rgba(40, 50, 70, 0.9);
+  border: 2px solid #64c8ff; border-radius: 6px; color: white; cursor: pointer;
+}
+.btn-cond.active { background-color: #00c864; border-color: white; }
+
+/* --- STATYSTYKI 📊 --- */
+.stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 10px; }
+.btn-stat-box {
+  background: rgba(30, 35, 50, 0.9); border: 1px solid #64c8ff; color: #ccc;
+  border-radius: 4px; padding: 6px 4px; font-size: 11px; font-family: monospace; cursor: pointer;
+}
+.btn-stat-box:active { background: #64c8ff; color: black; }
+
+.stat-full-box {
+  grid-column: span 2; background: rgba(15, 20, 30, 0.7);
+  border: 1px dashed rgba(100, 200, 255, 0.4); color: #e0e0e0;
+  border-radius: 4px; padding: 6px 8px; font-size: 12px; font-family: monospace;
+  display: flex; justify-content: space-between;
+}
+.stat-full-box span { color: #64c8ff; font-weight: bold; }
+
+/* --- UTILITIES --- */
+.text-blue { color: #64c8ff; }
+.text-yellow { color: #ffc800; }
+.border-yellow { border-color: #ffc800 !important; }
+
+@media (orientation: portrait) { #center-telemetry { display: none; } }
+
+
+/* Wyłączenie zaznaczania tekstu dla całego canvas i interfejsu */
+canvas, button, .ui-element {
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none;    /* Firefox */
+  -ms-user-select: none;     /* IE10+/Edge */
+  user-select: none;         /* Standard */
+  
+  /* Wyłączenie podświetlania "tap-highlight" (charakterystyczne dla Chrome/Android) */
+  -webkit-tap-highlight-color: transparent;
+  
+  /* Wyłączenie menu kontekstowego przy przytrzymaniu */
+  -webkit-touch-callout: none;
+}
+
+/* Dodaj to w sekcji PRZYCISKI GŁÓWNE lub na samym końcu pliku */
+.top-btn-restart {
+  right: 285px; /* Po lewej stronie od przycisku Pełny Ekran (125px + 150px + 10px) */
+  width: 45px;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
