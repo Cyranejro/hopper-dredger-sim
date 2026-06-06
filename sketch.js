@@ -256,7 +256,7 @@ HP.N += yawDragN;
   let safeU = Math.abs(u);
   let velocitySaturation = 1.0 / (1.0 + safeU * 0.25); 
   
-  let bankForceFactorY = 0.2 * rho * LBP * currentS.draft * (u * safeU) * velocitySaturation; 
+  let bankForceFactorY = 0.05 * rho * LBP * currentS.draft * (u * safeU) * velocitySaturation; 
   let bankForceFactorN = 0.005 * rho * LBP * LBP * currentS.draft * (u * safeU) * velocitySaturation;
 
   let targetENV_Y = hydro.bankY * bankForceFactorY;
@@ -280,15 +280,22 @@ HP.N += yawDragN;
   let ENV_N = window.filteredEnvN;
 
   // Ograniczniki wciąż tu są jako absolutny "hard limit" dla glitchy, ale rzadko będą teraz uderzane
-  ENV_Y = constrain(ENV_Y, -500000, 500000); 
-  ENV_N = constrain(ENV_N, -8000000, 8000000);
+  //ENV_Y = constrain(ENV_Y, -500000, 500000); 
+  //ENV_N = constrain(ENV_N, -8000000, 8000000);
 
   // ---> DODAJ TO PONIŻEJ OGRANICZEŃ CONSTRAIN <---
   // Zapisujemy parametry do globalnego obiektu do celów rysowania
+// Zapisujemy parametry do globalnego obiektu do celów rysowania i HUD-a
   window.hydroDebug = {
     squat: squatResistanceMulti,
     forceY: ENV_Y,
-    forceN: ENV_N
+    forceN: ENV_N,
+    
+    // --- NOWE ZMIENNE DO PORÓWNANIA W HUD ---
+    rudderAngle: radians(currRudAngleDeg), // Przekazujemy w radianach, HUD sam to zmieni na stopnie
+    thrustX: TL + TR,                      // Suma ciągu lewej i prawej śruby
+    rudderY: RL.Y + RR.Y,                  // Suma siły poprzecznej sterów
+    rudderN: RL.N + RR.N                   // Suma momentu obrotowego od sterów
   };
 
   // 4. APLIKACJA WSZYSTKICH SIŁ NA MASY
@@ -692,7 +699,7 @@ function drawControlUI() {
       let raw = map(t.y, engY + engH - 3, engY + 3, -1800, 1800);
       targetNR = Math.abs(raw) < 250 ? 0 : (raw > 0 && raw < 600 ? 600 : (raw < 0 && raw > -600 ? -600 : constrain(raw, -1800, 1800)));
     }
-    if (t.x > btX - margin && t.x < t.x + btW + margin && t.y > btY - margin && t.y < btY + btH + margin) {
+    if (t.x > btX - margin && t.x < btX + btW + margin && t.y > btY - margin && t.y < btY + btH + margin) {
       let raw = map(t.x, btX + 3, btX + btW - 3, -1, 1);
       bowThrusterCmd = Math.abs(raw) < 0.15 ? 0 : constrain(raw, -1, 1);
     }
@@ -1007,32 +1014,57 @@ function drawSensors() {
       
     }
     
-    // --- TEKSTOWY HUD OBOK STATKU ---
+    /// --- TEKSTOWY HUD OBOK STATKU ---
     rotate(-hdg); // Odwracamy obrót, by tekst był czytelny poziomo (zawsze do góry)
     
     // Zapobiegamy skalowaniu tekstu przy oddalaniu/przybliżaniu kamery
     let hudScale = constrain(1/zoom, 0.5, 2.0);
     scale(hudScale); 
 
-    fill(255);
     stroke(0); // Czarna obwódka dla czytelności na każdym tle
     strokeWeight(3);
-    textSize(14);
+    textSize(10);
     textAlign(LEFT, CENTER);
     
-    // Zmieniamy na kN (kiloniutony) i kNm dla czytelności (dzielenie przez 1000)
-    let txtSquat = `SQUAT MULTI: ${window.hydroDebug.squat.toFixed(2)}x`;
-    let txtBankY = `BANK Y (Spychanie): ${(window.hydroDebug.forceY / 1000).toFixed(1)} kN`;
-    let txtBankN = `BANK N (Obrót): ${(window.hydroDebug.forceN / 1000).toFixed(1)} kNm`;
+    // Zabezpieczenie przed undefined (gdyby HUD uruchomił się przed fizyką)
+    let rAng = window.hydroDebug.rudderAngle || 0;
+    let tX = window.hydroDebug.thrustX || 0;
+    let rY = window.hydroDebug.rudderY || 0;
+    let rN = window.hydroDebug.rudderN || 0;
+    let fY = window.hydroDebug.forceY || 0;
+    let fN = window.hydroDebug.forceN || 0;
+    let sq = window.hydroDebug.squat || 1;
+
+    // Formatowanie danych (kiloniutony)
+    let rAngDeg   = (rAng * (180 / Math.PI)).toFixed(0);
+    let txtState  = `BIEG / STER: ${rAngDeg}°`;
+    let txtThrust = `CIĄG ŚRUBY X: ${(tX / 1000).toFixed(1)} kN`;
+    let txtRudY   = `STER Y (Boczna): ${(rY / 1000).toFixed(1)} kN`;
+    let txtRudN   = `STER N (Moment): ${(rN / 1000).toFixed(1)} kNm`;
     
-    // Rysujemy tekst ok. 80 pikseli w prawo od statku
-    text(txtSquat, 80, -25);
+    let txtSquat  = `SQUAT MULTI: ${sq.toFixed(2)}x`;
+    let txtBankY  = `BANK Y (Skarpa): ${(fY / 1000).toFixed(1)} kN`;
+    let txtBankN  = `BANK N (Moment): ${(fN / 1000).toFixed(1)} kNm`;
     
-    // Jeśli działa Bank Effect, podświetlamy tekst na różowo
-    if (Math.abs(window.hydroDebug.forceY) > 5000) fill(255, 100, 255);
-    else fill(255);
-    text(txtBankY, 80, 0);
-    text(txtBankN, 80, 25);
+    // SEKCJA NAPĘDOWA (Zielona)
+    fill(100, 255, 100);
+    text(txtState, 80, -45);
+    text(txtThrust, 80, -30);
+    text(txtRudY, 80, -15);
+    text(txtRudN, 80, 0);
+    
+    // SEKCJA HYDRODYNAMICZNA (Biała)
+    fill(255);
+    text(txtSquat, 80, 15);
+    
+    // Alarm: Skarpa silniejsza niż kontrujący ster!
+    if (Math.abs(fY) > Math.abs(rY)) {
+      fill(255, 100, 255); 
+    } else {
+      fill(255);
+    }
+    text(txtBankY, 80, 30);
+    text(txtBankN, 80, 45);
     
     pop();
   }
@@ -1083,7 +1115,7 @@ const HULL_STATIONS = [
 ];
 
 // Mnożniki szerokości (B/2): 0.0=Stępka, 1.0=Burta (Kolizja), >1.0=Czujniki Bank Effect
-const Y_MULT = [0.0, 1.0, 1.5, 2.5, 4.0];
+const Y_MULT = [0.0, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0];
 
 // Dodane argumenty: u, v, r, pivotX
 function scanHydrodynamics(posX, posY, hdg, L, B, draft, u, v, r, pivotX) {
@@ -1221,3 +1253,4 @@ async function loadGzipMask(url) {
     console.error("Problem z ładowaniem maski:", error);
   }
 }
+// Tu nic nie ma
