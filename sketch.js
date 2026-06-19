@@ -12,7 +12,7 @@ let isMaskReady = false; // Kluczowa flaga blokująca fizykę
 let landMask;
 let isGameOver = false;
 
-let debugMode = true;
+let debugMode = false;
 let debugMaskMode = false;
 
 // --- SYSTEM KAFELKÓW (TILE ENGINE) ---
@@ -323,7 +323,11 @@ HP.N += yawDragN;
 }
 
 function updateVisualHistory() {
-  if (simulatedTimeDuration - lastTrailTime >= 1.0) {
+  // STAŁY interwał (np. co 0.5 sekundy czasu symulowanego)
+  const INTERVAL = 0.5; 
+
+  // Ślady statku (główna linia)
+  if (simulatedTimeDuration - lastTrailTime >= INTERVAL) {
     let maxTrail = 600;
     if (trail.length < maxTrail) trail.push({ x: posX, y: posY });
     else {
@@ -333,7 +337,8 @@ function updateVisualHistory() {
     lastTrailTime = simulatedTimeDuration;
   }
 
-  if (simulatedTimeDuration - lastBowSternTime >= 0.5) {
+  // Ślady dziobu i rufy
+  if (simulatedTimeDuration - lastBowSternTime >= INTERVAL) {
     let cosH = Math.cos(hdg), sinH = Math.sin(hdg);
     let bowPos = { x: (posX + (LBP * 0.5) * cosH), y: (posY + (LBP * 0.5) * sinH) };
     let sternPos = { x: (posX + (-LBP * 0.5) * cosH), y: (posY + (-LBP * 0.5) * sinH) };
@@ -350,15 +355,15 @@ function updateVisualHistory() {
     lastBowSternTime = simulatedTimeDuration;
   }
 
-  timerGhost += deltaTime / 1000;
-  if (timerGhost >= 5) {
+  // Duchy statku (np. co 5 sekund)
+  if (simulatedTimeDuration - timerGhost >= 10.0) {
     let maxGhosts = 40;
     if (ghostShips.length < maxGhosts) ghostShips.push({ x: posX, y: posY, h: hdg });
     else {
       ghostShips[ghostHead] = { x: posX, y: posY, h: hdg };
       ghostHead = (ghostHead + 1) % maxGhosts;
     }
-    timerGhost = 0;
+    timerGhost = simulatedTimeDuration; // Używamy czasu symulowanego
   }
 }
 
@@ -681,13 +686,37 @@ function drawControlUI() {
   let engW, engH, engY, lEngX, rEngX, btW, btH, btY, btX, rudW, rudH, rudY, rudX;
 
   if (isLandscape) {
-    engW = width * 0.08; engH = height * 0.35; lEngX = width * 0.025; rEngX = lEngX + engW * 1.5; engY = height - engH - 30;
-    btW = engW * 2.5; btH = engW * 0.5; btX = width * 0.025; btY = engY - btH - engW * 1.5;
-    rudW = btW * 2; rudH = btH; rudX = width - rudW - 30; rudY = height - rudH - 30;
+    engW = width * 0.08; 
+    engH = height * 0.35; 
+    lEngX = 30; 
+    rEngX = lEngX + engW * 1.5; 
+    engY = height - engH - 30;
+    
+    btW = engW * 2.5; 
+    btH = engW/1.618; 
+    btX = lEngX; 
+    btY = engY - btH - engW - 20;
+
+    rudW = btW * 2; 
+    rudH = btH; 
+    rudX = width - rudW - 30; 
+    rudY = height - rudH - 30;
   } else {
-    engW = width * 0.16; engH = height * 0.35; lEngX = width * 0.03; rEngX = lEngX + engW * 1.5; engY = height - engH - 30;
-    btW = engW*2.5; btH = 60; btX = width * 0.04; btY = engY - btH - engW - 20;
-    rudW = width * 0.40; rudH = 70; rudX = width * 0.58; rudY = height - rudH - 30;
+    engW = width * 0.16; 
+    engH = height * 0.35; 
+    lEngX = width * 0.025; 
+    rEngX = lEngX + engW * 1.5; 
+    engY = height - engH - 30;
+
+    btW = engW*2.5; 
+    btH = engW/1.618; 
+    btX = lEngX; 
+    btY = engY - btH - engW - 20;
+
+    rudW = width * 0.40; 
+    rudH = btH; 
+    rudX = width * 0.58; 
+    rudY = height - rudH - 30;
   }
 
   for (let t of inputs) {
@@ -802,8 +831,26 @@ function restartSimulation() {
   posX = 1200;
   posY = 700;
   hdg = radians(30);
-  bKnots = sKnots = u = v = r = alphaL = alphaR = nL = nR = targetNL = targetNR = targetRud = simulatedTimeDuration = 0;
+  
+  // Reset fizyki
+  bKnots = sKnots = u = v = r = alphaL = alphaR = nL = nR = targetNL = targetNR = targetRud = 0;
+  
+  // Reset czasu
+  simulatedTimeDuration = 0;
   simulationStartTime = millis();
+  lastTrailTime = 0;
+  lastBowSternTime = 0;
+  timerGhost = 0;
+  
+  // Reset historii wizualnej
+  trail = []; 
+  bowTrail = []; 
+  sternTrail = []; 
+  ghostShips = [];
+  trailHead = 0; 
+  bowSternHead = 0; 
+  ghostHead = 0;
+  
   console.log("Symulacja zrestartowana.");
 }
 function getMaskValueAt(worldX, worldY) {
