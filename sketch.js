@@ -11,6 +11,7 @@ let isMaskReady = false; // Kluczowa flaga blokująca fizykę
 
 let landMask;
 let isGameOver = false;
+
 let debugMode = true;
 let debugMaskMode = false;
 
@@ -684,9 +685,9 @@ function drawControlUI() {
     btW = engW * 2.5; btH = engW * 0.5; btX = width * 0.025; btY = engY - btH - engW * 1.5;
     rudW = btW * 2; rudH = btH; rudX = width - rudW - 30; rudY = height - rudH - 30;
   } else {
-    engW = width * 0.16; engH = height * 0.35; lEngX = width * 0.04; rEngX = lEngX + engW * 1.5; engY = height - engH - 30;
-    btW = width * 0.45; btH = 60; btX = width * 0.04; btY = engY - btH - engW - 20;
-    rudW = width * 0.45; rudH = 70; rudX = width * 0.51; rudY = height - rudH - 30;
+    engW = width * 0.16; engH = height * 0.35; lEngX = width * 0.03; rEngX = lEngX + engW * 1.5; engY = height - engH - 30;
+    btW = engW*2.5; btH = 60; btX = width * 0.04; btY = engY - btH - engW - 20;
+    rudW = width * 0.40; rudH = 70; rudX = width * 0.58; rudY = height - rudH - 30;
   }
 
   for (let t of inputs) {
