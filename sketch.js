@@ -842,7 +842,7 @@ class TileManager {
     this.tileCache = new Map(); // Pamięć podręczna na wczytane kafelki
     this.loadingTiles = new Set(); // Zapobiega wielokrotnemu wczytywaniu tego samego kafelka
     
-    // Ścieżka do kafelków: gdansk/TILES/tile_col_row.jpg
+    // Ścieżka do kafelków: GDANSK/TILES/tile_col_row.jpg
     this.basePath = 'gdansk/tiles/tile_'; 
   }
 
